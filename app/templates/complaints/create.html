@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}New Complaint{% endblock %}
+{% block page_title %}Register New Complaint{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Complaint Title *</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Severity</label>
+                <select name="severity" class="form-control">
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Detailed Description *</label>
+            <textarea name="description" class="form-control" rows="4" required></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Department *</label>
+                <select name="department_id" class="form-control" required>
+                    {% for dept in departments %}<option value="{{ dept.id }}">{{ dept.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Software / Application *</label>
+                <select name="software_id" class="form-control" required>
+                    {% for sw in softwares %}<option value="{{ sw.id }}">{{ sw.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category_id" class="form-control">
+                    <option value="">-- Select --</option>
+                    {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Priority *</label>
+                <select name="priority_id" class="form-control" required>
+                    {% for p in priorities %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Affected Location / Ward</label>
+                <input type="text" name="affected_location" class="form-control" placeholder="e.g., Ward 3, Reception">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Affected Device / Workstation</label>
+            <input type="text" name="affected_device" class="form-control" placeholder="e.g., PC-001, Nurse Station PC">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+    </form>
+</div>
+{% endblock %}

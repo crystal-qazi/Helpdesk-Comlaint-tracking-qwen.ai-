@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}SLA Compliance Report{% endblock %}
+{% block page_title %}📊 SLA Compliance Report{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+    <div class="card" style="padding: 15px; border-left: 4px solid #8b5cf6;">
+        <small style="color: #64748b;">Overall Compliance</small>
+        <h2 style="margin: 5px 0; color: #8b5cf6;">{{ compliance_rate }}%</h2>
+    </div>
+    <div class="card" style="padding: 15px; border-left: 4px solid #0ea5e9;">
+        <small style="color: #64748b;">Total Resolved</small>
+        <h2 style="margin: 5px 0; color: #0ea5e9;">{{ total }}</h2>
+    </div>
+    <div class="card" style="padding: 15px; border-left: 4px solid #10b981;">
+        <small style="color: #64748b;">Resolved On Time</small>
+        <h2 style="margin: 5px 0; color: #10b981;">{{ on_time|length }}</h2>
+    </div>
+    <div class="card" style="padding: 15px; border-left: 4px solid #dc2626;">
+        <small style="color: #64748b;">Breached SLA</small>
+        <h2 style="margin: 5px 0; color: #dc2626;">{{ breached|length }}</h2>
+    </div>
+    <div class="card" style="padding: 15px; border-left: 4px solid #64748b;">
+        <small style="color: #64748b;">No SLA Set</small>
+        <h2 style="margin: 5px 0; color: #64748b;">{{ no_sla|length }}</h2>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+    <div class="card">
+        <h3 style="margin-top: 0;">Compliance by Priority</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9;">
+                    <th style="padding: 8px; text-align: left;">Priority</th>
+                    <th style="padding: 8px; text-align: center;">Total</th>
+                    <th style="padding: 8px; text-align: center;">On Time</th>
+                    <th style="padding: 8px; text-align: center;">Breached</th>
+                    <th style="padding: 8px; text-align: center;">Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for priority, data in by_priority.items() %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 8px;"><strong>{{ priority }}</strong></td>
+                    <td style="padding: 8px; text-align: center;">{{ data.total }}</td>
+                    <td style="padding: 8px; text-align: center; color: #10b981;">{{ data.on_time }}</td>
+                    <td style="padding: 8px; text-align: center; color: #dc2626;">{{ data.breached }}</td>
+                    <td style="padding: 8px; text-align: center;">
+                        {% set rate = (data.on_time / data.total * 100)|round(1) if data.total > 0 else 0 %}
+                        <strong style="color: {% if rate >= 90 %}#10b981{% elif rate >= 70 %}#f59e0b{% else %}#dc2626{% endif %};">
+                            {{ rate }}%
+                        </strong>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card">
+        <h3 style="margin-top: 0;">Compliance by Department</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9;">
+                    <th style="padding: 8px; text-align: left;">Department</th>
+                    <th style="padding: 8px; text-align: center;">Total</th>
+                    <th style="padding: 8px; text-align: center;">On Time</th>
+                    <th style="padding: 8px; text-align: center;">Breached</th>
+                    <th style="padding: 8px; text-align: center;">Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept, data in by_department.items() %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 8px;"><strong>{{ dept }}</strong></td>
+                    <td style="padding: 8px; text-align: center;">{{ data.total }}</td>
+                    <td style="padding: 8px; text-align: center; color: #10b981;">{{ data.on_time }}</td>
+                    <td style="padding: 8px; text-align: center; color: #dc2626;">{{ data.breached }}</td>
+                    <td style="padding: 8px; text-align: center;">
+                        {% set rate = (data.on_time / data.total * 100)|round(1) if data.total > 0 else 0 %}
+                        <strong style="color: {% if rate >= 90 %}#10b981{% elif rate >= 70 %}#f59e0b{% else %}#dc2626{% endif %};">
+                            {{ rate }}%
+                        </strong>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

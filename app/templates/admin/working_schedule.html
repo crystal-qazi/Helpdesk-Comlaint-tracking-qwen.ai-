@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Working Schedule{% endblock %}
+{% block page_title %}Working Schedule Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3 style="margin-top: 0;">Working Schedule</h3>
+    <p style="color: #64748b;">Configure working days and hours for SLA calculations.</p>
+    
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 10px;">Day</th>
+                <th style="padding: 10px;">Working Day</th>
+                <th style="padding: 10px;">Start Time</th>
+                <th style="padding: 10px;">End Time</th>
+                <th style="padding: 10px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+            {% for schedule in schedules %}
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px;"><strong>{{ day_names[schedule.day_of_week] }}</strong></td>
+                <td style="padding: 10px;">
+                    {% if schedule.is_working_day %}
+                        <span style="color: #10b981;">✓ Yes</span>
+                    {% else %}
+                        <span style="color: #dc2626;">✗ No</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 10px;">{{ schedule.start_time.strftime('%H:%M') if schedule.start_time else 'N/A' }}</td>
+                <td style="padding: 10px;">{{ schedule.end_time.strftime('%H:%M') if schedule.end_time else 'N/A' }}</td>
+                <td style="padding: 10px;">
+                    <a href="{{ url_for('admin.edit_working_schedule', schedule_id=schedule.id) }}" class="btn" style="background: #f59e0b; color: white; padding: 5px 10px; font-size: 0.85rem;">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

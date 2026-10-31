@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}{{ complaint.complaint_number }}{% endblock %}
+{% block page_title %}{{ complaint.complaint_number }} - {{ complaint.title }}{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    
+    <!-- LEFT COLUMN: Details & Timeline -->
+    <div>
+        <!-- Ticket Details Card -->
+        <div class="card">
+            <h3 style="margin-top:0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Ticket Details</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div><strong>Department:</strong> {{ complaint.department.name }}</div>
+                <div><strong>Software:</strong> {{ complaint.software.name }}</div>
+                <div><strong>Category:</strong> {{ complaint.category.name if complaint.category else 'N/A' }}</div>
+                <div><strong>Severity:</strong> {{ complaint.severity }}</div>
+                <div><strong>Location:</strong> {{ complaint.affected_location or 'N/A' }}</div>
+                <div><strong>Device:</strong> {{ complaint.affected_device or 'N/A' }}</div>
+                <div><strong>Reported By:</strong> {{ complaint.reported_by.username }}</div>
+                <div><strong>Created By:</strong> {{ complaint.created_by.username }}</div>
+                <div><strong>Assigned To:</strong> {{ complaint.assigned_to.username if complaint.assigned_to else 'Unassigned' }}</div>
+                <div><strong>Created:</strong> {{ complaint.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            
+            <h4>Description</h4>
+            <p style="background: #f8fafc; padding: 15px; border-radius: 5px; white-space: pre-wrap;">{{ complaint.description }}</p>
+
+            {% if complaint.resolution_summary %}
+            <h4>Resolution Summary</h4>
+            <p style="background: #dcfce7; padding: 15px; border-radius: 5px; white-space: pre-wrap;">{{ complaint.resolution_summary }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Comments Section -->
+        <div class="card">
+            <h3 style="margin-top:0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Comments</h3>
+            
+            <!-- Existing Comments -->
+            {% for comment in complaint.comments|sort(attribute='created_at', reverse=True) %}
+                {% if comment.visibility == 'internal' or (comment.visibility == 'reporter_visible' and (current_user.has_permission('view_complaints') or complaint.reported_by_user_id == current_user.id)) %}
+                    <div style="background: {% if comment.visibility == 'internal' %}#fef3c7{% else %}#dbeafe{% endif %}; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>{{ comment.user.username }}</strong>
+                            <small style="color: #64748b;">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <p style="margin: 0; white-space: pre-wrap;">{{ comment.comment_text }}</p>
+                        <small style="color: #64748b; font-style: italic;">
+                            {% if comment.visibility == 'internal' %}🔒 Internal{% else %}👁️ Reporter Visible{% endif %}
+                        </small>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p style="color: #64748b;">No comments yet.</p>
+            {% endfor %}
+            
+            <!-- Add Comment Form -->
+            <form method="POST" action="{{ url_for('complaints.add_comment', complaint_id=complaint.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="form-group">
+                    <label>Add Comment</label>
+                    <textarea name="comment_text" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Visibility</label>
+                    <select name="visibility" class="form-control">
+                        <option value="internal">🔒 Internal (IT Staff Only)</option>
+                        <option value="reporter_visible">👁️ Reporter Visible</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Comment</button>
+            </form>
+        </div>
+
+        <!-- Attachments Section -->
+        <div class="card">
+            <h3 style="margin-top:0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Attachments</h3>
+            
+            <!-- Existing Attachments -->
+            {% for attachment in complaint.attachments|sort(attribute='uploaded_at', reverse=True) %}
+                <div style="background: #f8fafc; padding: 12px; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>📎 {{ attachment.original_filename }}</strong>
+                        <br>
+                        <small style="color: #64748b;">
+                            {{ (attachment.file_size / 1024)|round(2) }} KB • 
+                            Uploaded by {{ attachment.user.username }} on {{ attachment.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
+                        </small>
+                    </div>
+                    <a href="{{ url_for('complaints.download_attachment', attachment_id=attachment.id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.9rem;">Download</a>
+                </div>
+            {% else %}
+                <p style="color: #64748b;">No attachments yet.</p>
+            {% endfor %}
+            
+            <!-- Upload Attachment Form -->
+            <form method="POST" action="{{ url_for('complaints.upload_attachment', complaint_id=complaint.id) }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="form-group">
+                    <label>Upload File (Max 16 MB)</label>
+                    <input type="file" name="file" class="form-control" required>
+                    <small style="color: #64748b;">Allowed: txt, pdf, png, jpg, jpeg, gif, doc, docx, xls, xlsx, zip, log</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <!-- Activity Timeline Card -->
+        <div class="card">
+            <h3 style="margin-top:0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Activity Timeline</h3>
+            
+            {% set timeline = [] %}
+            {% for h in status_history %}
+                {% set _ = timeline.append({'type': 'status', 'time': h.changed_at, 'data': h}) %}
+            {% endfor %}
+            {% for a in assignment_history %}
+                {% set _ = timeline.append({'type': 'assign', 'time': a.assigned_at, 'data': a}) %}
+            {% endfor %}
+            
+            {% set sorted_timeline = timeline | sort(attribute='time', reverse=True) %}
+
+            {% for item in sorted_timeline %}
+                <div style="border-left: 3px solid #cbd5e1; padding-left: 15px; margin-bottom: 20px; position: relative;">
+                    <div style="position: absolute; left: -8px; top: 0; width: 12px; height: 12px; background: #0ea5e9; border-radius: 50%;"></div>
+                    <small style="color: #64748b;">{{ item.time.strftime('%Y-%m-%d %H:%M') }}</small>
+                    
+                    {% if item.type == 'status' %}
+                        <p style="margin: 5px 0;"><strong>{{ item.data.changed_by.username }}</strong> changed status from 
+                        <span style="background: {{ item.data.previous_status.color if item.data.previous_status else '#ccc' }}; color:white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">{{ item.data.previous_status.name if item.data.previous_status else 'None' }}</span> 
+                        to 
+                        <span style="background: {{ item.data.new_status.color }}; color:white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">{{ item.data.new_status.name }}</span></p>
+                        {% if item.data.notes %}<p style="margin: 0; color: #475569; font-style: italic;">"{{ item.data.notes }}"</p>{% endif %}
+                    {% else %}
+                        <p style="margin: 5px 0;"><strong>{{ item.data.assigned_by.username }}</strong> assigned ticket to <strong>{{ item.data.new_assignee.username }}</strong></p>
+                        {% if item.data.reason %}<p style="margin: 0; color: #475569; font-style: italic;">"{{ item.data.reason }}"</p>{% endif %}
+                    {% endif %}
+                </div>
+            {% else %}
+                <p style="color: #64748b;">No activity recorded yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Actions -->
+    <div>
+        <!-- Status Card -->
+        <div class="card" style="border-left: 5px solid {{ complaint.status.color }};">
+            <h3 style="margin-top:0;">Current Status</h3>
+            <p style="font-size: 1.5rem; font-weight: bold; color: {{ complaint.status.color }}; margin: 10px 0;">{{ complaint.status.name }}</p>
+            
+            <form method="POST" action="{{ url_for('complaints.update_status', complaint_id=complaint.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="form-group">
+                    <label>Change Status</label>
+                    <select name="status_id" class="form-control" required>
+                        {% for s in statuses %}
+                            <option value="{{ s.id }}" {% if s.id == complaint.status_id %}selected{% endif %}>{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Resolution Summary (Required if Resolving)</label>
+                    <textarea name="resolution_summary" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notes / Rejection Reason</label>
+                    <textarea name="notes" class="form-control" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Update Status</button>
+            </form>
+        </div>
+                <!-- SLA Card -->
+        <div class="card" style="border-left: 5px solid {% if complaint.sla_paused_at %}#6b7280{% elif complaint.sla_resolution_deadline and complaint.sla_resolution_deadline < now %}#dc2626{% else %}#0ea5e9{% endif %};">
+            <h3 style="margin-top:0;">SLA Tracking</h3>
+            
+         
+            
+            <div style="margin-bottom: 15px;">
+                <small style="color: #64748b;">Response Deadline</small>
+                <p style="margin: 5px 0; font-weight: bold; color: {% if complaint.sla_response_deadline and complaint.sla_response_deadline < now and not complaint.resolved_at %}#dc2626{% else %}#334155{% endif %};">
+                    {{ complaint.sla_response_deadline.strftime('%Y-%m-%d %H:%M') if complaint.sla_response_deadline else 'N/A' }}
+                </p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <small style="color: #64748b;">Resolution Deadline</small>
+                <p style="margin: 5px 0; font-weight: bold; color: {% if complaint.sla_resolution_deadline and complaint.sla_resolution_deadline < now and not complaint.resolved_at %}#dc2626{% else %}#334155{% endif %};">
+                    {{ complaint.sla_resolution_deadline.strftime('%Y-%m-%d %H:%M') if complaint.sla_resolution_deadline else 'N/A' }}
+                </p>
+            </div>
+
+            {% if complaint.sla_paused_at %}
+                <div style="background: #f3f4f6; padding: 10px; border-radius: 5px; text-align: center;">
+                    <strong style="color: #6b7280;">⏸️ SLA PAUSED</strong>
+                    <br><small>Since {{ complaint.sla_paused_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+            {% elif complaint.sla_resolution_deadline and complaint.sla_resolution_deadline < now and not complaint.resolved_at %}
+                <div style="background: #fee2e2; padding: 10px; border-radius: 5px; text-align: center;">
+                    <strong style="color: #dc2626;">🚨 SLA BREACHED</strong>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Assignment Card -->
+        <div class="card">
+            <h3 style="margin-top:0;">Assignment</h3>
+            <form method="POST" action="{{ url_for('complaints.assign_complaint', complaint_id=complaint.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="form-group">
+                    <label>Assign To</label>
+                    <select name="assigned_to_user_id" class="form-control" required>
+                        <option value="">-- Select User --</option>
+                        {% for u in users %}
+                            <option value="{{ u.id }}" {% if complaint.assigned_to_user_id == u.id %}selected{% endif %}>{{ u.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assignment Reason</label>
+                    <textarea name="reason" class="form-control" rows="2" placeholder="e.g., Expert in HIS module"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; background: #10b981;">Assign / Reassign</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

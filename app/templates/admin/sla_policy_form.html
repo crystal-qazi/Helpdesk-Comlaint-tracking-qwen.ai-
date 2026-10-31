@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Edit SLA Policy{% endblock %}
+{% block page_title %}Edit SLA Policy - {{ policy.priority.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label>Priority</label>
+            <input type="text" class="form-control" value="{{ policy.priority.name }}" readonly style="background: #f1f5f9;">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Response Time (minutes) *</label>
+                <input type="number" name="response_time_minutes" class="form-control" value="{{ policy.response_time_minutes }}" required min="1">
+                <small style="color: #64748b;">Time to first response</small>
+            </div>
+            <div class="form-group">
+                <label>Resolution Time (minutes) *</label>
+                <input type="number" name="resolution_time_minutes" class="form-control" value="{{ policy.resolution_time_minutes }}" required min="1">
+                <small style="color: #64748b;">Time to fully resolve ({{ (policy.resolution_time_minutes / 60)|round(1) }} hours)</small>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="is_active" {% if policy.is_active %}checked{% endif %}>
+                Active
+            </label>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">Update Policy</button>
+            <a href="{{ url_for('admin.sla_policies') }}" class="btn" style="background: #e2e8f0; color: #334155;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

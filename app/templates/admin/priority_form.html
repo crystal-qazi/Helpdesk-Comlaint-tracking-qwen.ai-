@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if priority else 'New' }} Priority{% endblock %}
+{% block page_title %}{{ 'Edit' if priority else 'Create New' }} Priority{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label>Priority Name *</label>
+            <input type="text" name="name" class="form-control" 
+                   value="{{ priority.name if priority else '' }}" 
+                   {% if priority %}readonly style="background: #f1f5f9;"{% else %}required{% endif %}>
+            {% if priority %}
+                <small style="color: #64748b;">Priority names cannot be changed to preserve historical complaint data.</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label>Color (Hex Code) *</label>
+            <input type="color" name="color" class="form-control" 
+                   value="{{ priority.color if priority else '#6c757d' }}" 
+                   required style="height: 50px;">
+            <small style="color: #64748b;">This color will be used to display the priority throughout the application.</small>
+        </div>
+        
+        {% if priority %}
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="is_active" {% if priority.is_active %}checked{% endif %}>
+                Active
+            </label>
+            <small style="color: #64748b;">Deactivating will prevent new complaints from using this priority, but historical records will be preserved.</small>
+        </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">{{ 'Update' if priority else 'Create' }} Priority</button>
+            <a href="{{ url_for('admin.priorities') }}" class="btn" style="background: #e2e8f0; color: #334155;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

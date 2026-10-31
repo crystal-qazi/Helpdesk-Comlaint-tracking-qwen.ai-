@@ -1,0 +1,34 @@
+./build/bin/llama-cli -m models/your_model.gguf -p "Your prompt here" -ngl 99
+
+
+llama serve D:\llama\Phi-3.5-mini-instruct.IQ4_XS.gguf
+
+llama serve -m "D:\llama\Phi-3.5-mini-instruct.IQ4_XS.gguf" -ngl 99
+
+
+
+llama serve --models-dir "D:\llama" -ngl 7 -c 6000
+
+
+llama serve --models-dir "D:\llama" -dev Vulkan0 -ngl 16 -c 8192 --context-shift
+llama serve --models-dir "D:\llama" -dev Vulkan0 -ngl 16 -c 8192 --cache-type-k q4_0 --context-shift
+llama serve --models-dir "D:\llama" -dev Vulkan0 -ngl 16 -c 8192 --cache-type-k q4_0 --context-shift
+llama serve --models-dir "D:\llama" -dev Vulkan0 -ngl 14 -c 8192 --context-shift
+
+
+
+
+64,000
+Context length exceeded (76 tokens). Cannot compress further. on llama serve --models-dir "D:\llama" -ngl 7 -c 4000
+
+
+
+The Command to Target ONLY the NVIDIA GPU
+llama serve --models-dir "D:\llama" -dev Vulkan1 -ngl 16 -c 8192 --cache-type-k q4_0 --context-shift
+
+only intel gpu
+llama serve --models-dir "D:\llama" -dev Vulkan0 -ngl 16 -c 8192 --cache-type-k q4_0 --context-shif
+
+
+The Command to Target BOTH GPUs Simultaneously (Multi-GPU Mode)
+llama serve --models-dir "D:\llama" -dev Vulkan0,Vulkan1 -ts 7,3 -ngl 24 -c 8192 --cache-type-k q4_0 --context-shift

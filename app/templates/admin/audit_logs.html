@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block page_title %}🔍 Audit Logs{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">Filters</h3>
+    <form method="GET" action="{{ url_for('admin.audit_logs') }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+            <div class="form-group">
+                <label>Action</label>
+                <select name="action" class="form-control">
+                    <option value="">All Actions</option>
+                    <option value="CREATE" {% if filters.action == 'CREATE' %}selected{% endif %}>CREATE</option>
+                    <option value="UPDATE" {% if filters.action == 'UPDATE' %}selected{% endif %}>UPDATE</option>
+                    <option value="DELETE" {% if filters.action == 'DELETE' %}selected{% endif %}>DELETE</option>
+                    <option value="LOGIN_SUCCESS" {% if filters.action == 'LOGIN_SUCCESS' %}selected{% endif %}>LOGIN_SUCCESS</option>
+                    <option value="LOGIN_FAILURE" {% if filters.action == 'LOGIN_FAILURE' %}selected{% endif %}>LOGIN_FAILURE</option>
+                    <option value="ASSIGN" {% if filters.action == 'ASSIGN' %}selected{% endif %}>ASSIGN</option>
+                    <option value="STATUS_CHANGE" {% if filters.action == 'STATUS_CHANGE' %}selected{% endif %}>STATUS_CHANGE</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Entity Type</label>
+                <select name="entity_type" class="form-control">
+                    <option value="">All Types</option>
+                    <option value="user" {% if filters.entity_type == 'user' %}selected{% endif %}>User</option>
+                    <option value="complaint" {% if filters.entity_type == 'complaint' %}selected{% endif %}>Complaint</option>
+                    <option value="role" {% if filters.entity_type == 'role' %}selected{% endif %}>Role</option>
+                    <option value="department" {% if filters.entity_type == 'department' %}selected{% endif %}>Department</option>
+                    <option value="authentication" {% if filters.entity_type == 'authentication' %}selected{% endif %}>Authentication</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" class="form-control" value="{{ filters.username or '' }}">
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn" style="background: #e2e8f0; color: #334155;">Clear</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h3 style="margin-top: 0;">Audit Log Entries ({{ logs.total }})</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                    <th style="padding: 10px;">Timestamp</th>
+                    <th style="padding: 10px;">User</th>
+                    <th style="padding: 10px;">Action</th>
+                    <th style="padding: 10px;">Entity</th>
+                    <th style="padding: 10px;">Name</th>
+                    <th style="padding: 10px;">IP Address</th>
+                    <th style="padding: 10px;">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs.items %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px; font-size: 0.85rem;">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td style="padding: 10px;"><strong>{{ log.username }}</strong></td>
+                    <td style="padding: 10px;">
+                        {% set action_colors = {
+                            'CREATE': '#10b981',
+                            'UPDATE': '#0ea5e9',
+                            'DELETE': '#dc2626',
+                            'LOGIN_SUCCESS': '#10b981',
+                            'LOGIN_FAILURE': '#dc2626',
+                            'ASSIGN': '#8b5cf6',
+                            'STATUS_CHANGE': '#f59e0b'
+                        } %}
+                        <span style="background: {{ action_colors.get(log.action, '#64748b') }}; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem;">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td style="padding: 10px;">{{ log.entity_type }}</td>
+                    <td style="padding: 10px;">{{ log.entity_name or '-' }}</td>
+                    <td style="padding: 10px; font-size: 0.85rem;">{{ log.ip_address or '-' }}</td>
+                    <td style="padding: 10px; font-size: 0.85rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                        {{ log.details or '-' }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" style="padding: 30px; text-align: center; color: #64748b;">No audit logs found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if logs.pages > 1 %}
+    <div style="display: flex; justify-content: center; gap: 5px; margin-top: 20px;">
+        {% if logs.has_prev %}
+            <a href="{{ url_for('admin.audit_logs', page=logs.prev_num, **filters) }}" class="btn" style="background: #e2e8f0; color: #334155; padding: 5px 10px;">← Prev</a>
+        {% endif %}
+        <span style="padding: 5px 15px;">Page {{ logs.page }} of {{ logs.pages }}</span>
+        {% if logs.has_next %}
+            <a href="{{ url_for('admin.audit_logs', page=logs.next_num, **filters) }}" class="btn" style="background: #e2e8f0; color: #334155; padding: 5px 10px;">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if holiday else 'New' }} Holiday{% endblock %}
+{% block page_title %}{{ 'Edit' if holiday else 'Create New' }} Holiday{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label>Date *</label>
+            <input type="date" name="date" class="form-control" 
+                   value="{{ holiday.date.strftime('%Y-%m-%d') if holiday else '' }}" 
+                   required {% if holiday %}readonly style="background: #f1f5f9;"{% endif %}>
+            {% if holiday %}
+                <small style="color: #64748b;">Date cannot be changed to preserve SLA calculation history.</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label>Holiday Name *</label>
+            <input type="text" name="name" class="form-control" 
+                   value="{{ holiday.name if holiday else '' }}" 
+                   required placeholder="e.g., New Year's Day, Christmas">
+        </div>
+        
+        {% if holiday %}
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="is_active" {% if holiday.is_active %}checked{% endif %}>
+                Active
+            </label>
+            <small style="color: #64748b;">Deactivating this holiday will include it in SLA calculations going forward.</small>
+        </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">{{ 'Update' if holiday else 'Create' }} Holiday</button>
+            <a href="{{ url_for('admin.holidays') }}" class="btn" style="background: #e2e8f0; color: #334155;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

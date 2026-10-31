@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+    
+    <a href="{{ url_for('reports.complaints_report') }}" class="card" style="text-decoration: none; color: inherit; transition: transform 0.2s;">
+        <h3 style="color: #0ea5e9; margin-top: 0;">📋 Complaints Report</h3>
+        <p style="color: #64748b; margin: 0;">Generate detailed complaints reports with custom filters, date ranges, and export to PDF/CSV.</p>
+    </a>
+    
+    <a href="{{ url_for('reports.overdue_report') }}" class="card" style="text-decoration: none; color: inherit;">
+        <h3 style="color: #dc2626; margin-top: 0;">⏰ Overdue Complaints</h3>
+        <p style="color: #64748b; margin: 0;">View all complaints that have exceeded their SLA resolution deadline.</p>
+    </a>
+    
+    <a href="{{ url_for('reports.sla_compliance_report') }}" class="card" style="text-decoration: none; color: inherit;">
+        <h3 style="color: #8b5cf6; margin-top: 0;">📊 SLA Compliance</h3>
+        <p style="color: #64748b; margin: 0;">Analyze SLA performance by priority and department with compliance rates.</p>
+    </a>
+    
+    <a href="{{ url_for('reports.by_department_report') }}" class="card" style="text-decoration: none; color: inherit;">
+        <h3 style="color: #10b981; margin-top: 0;">🏢 By Department</h3>
+        <p style="color: #64748b; margin: 0;">Complaint distribution across hospital departments.</p>
+    </a>
+    
+    <a href="{{ url_for('reports.by_software_report') }}" class="card" style="text-decoration: none; color: inherit;">
+        <h3 style="color: #f59e0b; margin-top: 0;">💻 By Software</h3>
+        <p style="color: #64748b; margin: 0;">Complaints grouped by software application.</p>
+    </a>
+    
+    <a href="{{ url_for('reports.by_priority_report') }}" class="card" style="text-decoration: none; color: inherit;">
+        <h3 style="color: #ef4444; margin-top: 0;">🎯 By Priority</h3>
+        <p style="color: #64748b; margin: 0;">Complaint distribution by priority level.</p>
+    </a>
+    
+    <a href="{{ url_for('reports.by_status_report') }}" class="card" style="text-decoration: none; color: inherit;">
+        <h3 style="color: #06b6d4; margin-top: 0;">🔄 By Status</h3>
+        <p style="color: #64748b; margin: 0;">Current complaint distribution by lifecycle status.</p>
+    </a>
+    
+    <a href="{{ url_for('reports.by_assignee_report') }}" class="card" style="text-decoration: none; color: inherit;">
+        <h3 style="color: #6366f1; margin-top: 0;">👥 By Assignee</h3>
+        <p style="color: #64748b; margin: 0;">Workload distribution among support staff.</p>
+    </a>
+    
+</div>
+{% endblock %}

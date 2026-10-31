@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Role' if role else 'New Role' }}{% endblock %}
+{% block page_title %}{{ 'Edit Role' if role else 'Create New Role' }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label>Role Name *</label>
+            <input type="text" name="name" class="form-control" value="{{ role.name if role else '' }}" {% if role %}readonly{% else %}required{% endif %}>
+        </div>
+        
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" class="form-control" rows="2">{{ role.description if role else '' }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Permissions</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; padding: 15px; background: #f8fafc; border-radius: 5px; max-height: 400px; overflow-y: auto;">
+                {% for perm in permissions %}
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" name="permission_ids" value="{{ perm.id }}" 
+                               {% if role and perm in role.permissions %}checked{% endif %}>
+                        <span>{{ perm.name }}</span>
+                        {% if perm.description %}<small style="color: #64748b;">- {{ perm.description }}</small>{% endif %}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if role %}
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="is_active" {% if role.is_active %}checked{% endif %}>
+                Active
+            </label>
+        </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">{{ 'Update Role' if role else 'Create Role' }}</button>
+            <a href="{{ url_for('admin.roles') }}" class="btn" style="background: #e2e8f0; color: #334155;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

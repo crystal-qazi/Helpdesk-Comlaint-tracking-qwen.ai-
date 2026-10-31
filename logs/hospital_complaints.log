@@ -1,0 +1,53 @@
+2026-10-31 17:06:54,375 ERROR: Exception on /admin/categories/new [GET] [in D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\app\permissions\decorators.py", line 24, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\app\routes\admin.py", line 314, in create_category
+    return _config_create(Category, 'Category', 'admin.categories', 'category')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\app\routes\admin.py", line 224, in _config_create
+    return render_template('admin/config_form.html', item=None, item_name=item_name,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\templating.py", line 132, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\app\templates\admin\config_form.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\app\templates\base.html", line 93, in top-level template code
+    {% block content %}{% endblock %}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\app\templates\admin\config_form.html", line 35, in block 'content'
+    <a href="{{ url_for('admin.' + item_name|lower + 's') }}" class="btn" style="background: #e2e8f0; color: #334155;">Cancel</a>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\USB_Sync\Development\AI_project\qwenai\helpdesk\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.categorys'. Did you mean 'admin.categories' instead?

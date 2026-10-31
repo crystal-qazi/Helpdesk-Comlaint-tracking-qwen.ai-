@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}SLA Policies{% endblock %}
+{% block page_title %}SLA Policy Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3 style="margin-top: 0;">SLA Policies by Priority</h3>
+    <p style="color: #64748b;">Configure response and resolution time targets for each priority level.</p>
+    
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 10px;">Priority</th>
+                <th style="padding: 10px;">Response Time (minutes)</th>
+                <th style="padding: 10px;">Resolution Time (minutes)</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for policy in policies %}
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px;"><strong>{{ policy.priority.name }}</strong></td>
+                <td style="padding: 10px;">{{ policy.response_time_minutes }} min</td>
+                <td style="padding: 10px;">{{ policy.resolution_time_minutes }} min ({{ (policy.resolution_time_minutes / 60)|round(1) }} hours)</td>
+                <td style="padding: 10px;">
+                    {% if policy.is_active %}
+                        <span style="color: #10b981;">✓ Active</span>
+                    {% else %}
+                        <span style="color: #dc2626;">✗ Inactive</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 10px;">
+                    <a href="{{ url_for('admin.edit_sla_policy', policy_id=policy.id) }}" class="btn" style="background: #f59e0b; color: white; padding: 5px 10px; font-size: 0.85rem;">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

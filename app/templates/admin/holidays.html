@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Holidays{% endblock %}
+{% block page_title %}Holiday Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0;">Holidays</h3>
+        <a href="{{ url_for('admin.create_holiday') }}" class="btn btn-primary">+ New Holiday</a>
+    </div>
+    
+    <p style="color: #64748b;">Holidays are excluded from SLA calculations. Deactivated holidays will not affect SLA calculations.</p>
+    
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 10px;">Date</th>
+                <th style="padding: 10px;">Holiday Name</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for holiday in holidays %}
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px;"><strong>{{ holiday.date.strftime('%Y-%m-%d') }}</strong></td>
+                <td style="padding: 10px;">{{ holiday.name }}</td>
+                <td style="padding: 10px;">
+                    {% if holiday.is_active %}
+                        <span style="color: #10b981;">✓ Active</span>
+                    {% else %}
+                        <span style="color: #dc2626;">✗ Inactive</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 10px;">
+                    <a href="{{ url_for('admin.edit_holiday', holiday_id=holiday.id) }}" class="btn" style="background: #f59e0b; color: white; padding: 5px 10px; font-size: 0.85rem;">Edit</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="padding: 30px; text-align: center; color: #64748b;">No holidays configured.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if item else 'New' }} {{ item_name }}{% endblock %}
+{% block page_title %}{{ 'Edit' if item else 'Create New' }} {{ item_name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label>{{ item_name }} Name *</label>
+            <input type="text" name="name" class="form-control" maxlength="100"
+                   value="{{ item.name if item else '' }}" required>
+            {% if item %}
+                <small style="color:#f59e0b;">⚠️ Renaming updates the label shown on historical complaints.</small>
+            {% endif %}
+        </div>
+
+        {% if item %}
+        <div class="form-group">
+            <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" name="is_active" {% if item.is_active %}checked{% endif %}> Active
+            </label>
+            <small style="color:#64748b;">Deactivating hides this {{ item_name|lower }} from new complaints; history is preserved.</small>
+        </div>
+        {% endif %}
+
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary">{{ 'Update' if item else 'Create' }} {{ item_name }}</button>
+            <!-- Use the explicitly passed cancel_url to avoid pluralization errors like 'categorys' -->
+            <a href="{{ cancel_url }}" class="btn" style="background:#e2e8f0; color:#334155;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Complaints Report{% endblock %}
+{% block page_title %}Complaints Report{% endblock %}
+
+{% block content %}
+<!-- Filter Form -->
+<div class="card" style="margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">🔍 Filters</h3>
+    <form method="GET" action="{{ url_for('reports.complaints_report') }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+            <div class="form-group">
+                <label>Report Type</label>
+                <select name="report_type" class="form-control" id="report-type">
+                    <option value="custom" {% if filters.report_type == 'custom' %}selected{% endif %}>Custom Range</option>
+                    <option value="daily" {% if filters.report_type == 'daily' %}selected{% endif %}>Today</option>
+                    <option value="weekly" {% if filters.report_type == 'weekly' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="monthly" {% if filters.report_type == 'monthly' %}selected{% endif %}>Last 30 Days</option>
+                </select>
+            </div>
+            <div class="form-group" id="date-start-group">
+                <label>Start Date</label>
+                <input type="date" name="start_date" class="form-control" value="{{ filters.start_date or '' }}">
+            </div>
+            <div class="form-group" id="date-end-group">
+                <label>End Date</label>
+                <input type="date" name="end_date" class="form-control" value="{{ filters.end_date or '' }}">
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select name="department_id" class="form-control">
+                    <option value="">All Departments</option>
+                    {% for d in departments %}
+                        <option value="{{ d.id }}" {% if filters.department_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Software</label>
+                <select name="software_id" class="form-control">
+                    <option value="">All Software</option>
+                    {% for s in softwares %}
+                        <option value="{{ s.id }}" {% if filters.software_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Priority</label>
+                <select name="priority_id" class="form-control">
+                    <option value="">All Priorities</option>
+                    {% for p in priorities %}
+                        <option value="{{ p.id }}" {% if filters.priority_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status_id" class="form-control">
+                    <option value="">All Statuses</option>
+                    {% for s in statuses %}
+                        <option value="{{ s.id }}" {% if filters.status_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Assigned To</label>
+                <select name="assigned_to_user_id" class="form-control">
+                    <option value="">All Users</option>
+                    {% for u in users %}
+                        <option value="{{ u.id }}" {% if filters.assigned_to_user_id == u.id %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+            <a href="{{ url_for('reports.complaints_report') }}" class="btn" style="background: #e2e8f0; color: #334155;">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Summary Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
+    <div class="card" style="padding: 12px; border-left: 4px solid #0ea5e9;">
+        <small style="color: #64748b;">Total</small>
+        <h3 style="margin: 4px 0; color: #0ea5e9;">{{ summary.total }}</h3>
+    </div>
+    <div class="card" style="padding: 12px; border-left: 4px solid #06b6d4;">
+        <small style="color: #64748b;">Open</small>
+        <h3 style="margin: 4px 0; color: #06b6d4;">{{ summary.open }}</h3>
+    </div>
+    <div class="card" style="padding: 12px; border-left: 4px solid #10b981;">
+        <small style="color: #64748b;">Resolved</small>
+        <h3 style="margin: 4px 0; color: #10b981;">{{ summary.resolved }}</h3>
+    </div>
+    <div class="card" style="padding: 12px; border-left: 4px solid #dc2626;">
+        <small style="color: #64748b;">Overdue</small>
+        <h3 style="margin: 4px 0; color: #dc2626;">{{ summary.overdue }}</h3>
+    </div>
+    <div class="card" style="padding: 12px; border-left: 4px solid #8b5cf6;">
+        <small style="color: #64748b;">SLA</small>
+        <h3 style="margin: 4px 0; color: #8b5cf6;">{{ summary.sla_compliance }}%</h3>
+    </div>
+</div>
+
+<!-- Export Buttons -->
+<div class="card" style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+    <strong>Export:</strong>
+    <a href="{{ url_for('reports.export_pdf', **filters) }}" class="btn" style="background: #dc2626; color: white;">📄 Export PDF</a>
+    <a href="{{ url_for('reports.export_csv', **filters) }}" class="btn" style="background: #10b981; color: white;">📊 Export CSV</a>
+    <button onclick="window.print()" class="btn" style="background: #64748b; color: white;">🖨️ Print</button>
+</div>
+
+<!-- Results Table -->
+<div class="card">
+    <h3 style="margin-top: 0;">Results ({{ complaints|length }})</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                    <th style="padding: 10px;">Ticket #</th>
+                    <th style="padding: 10px;">Title</th>
+                    <th style="padding: 10px;">Department</th>
+                    <th style="padding: 10px;">Software</th>
+                    <th style="padding: 10px;">Priority</th>
+                    <th style="padding: 10px;">Status</th>
+                    <th style="padding: 10px;">Assigned To</th>
+                    <th style="padding: 10px;">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in complaints %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px;">
+                        <a href="{{ url_for('complaints.view_complaint', complaint_id=c.id) }}" style="color: #0ea5e9; font-weight: bold; text-decoration: none;">
+                            {{ c.complaint_number }}
+                        </a>
+                    </td>
+                    <td style="padding: 10px;">{{ c.title[:60] }}{% if c.title|length > 60 %}...{% endif %}</td>
+                    <td style="padding: 10px;">{{ c.department.name }}</td>
+                    <td style="padding: 10px;">{{ c.software.name }}</td>
+                    <td style="padding: 10px;"><span style="color: {{ c.priority.color }}; font-weight: bold;">{{ c.priority.name }}</span></td>
+                    <td style="padding: 10px;"><span style="background: {{ c.status.color }}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">{{ c.status.name }}</span></td>
+                    <td style="padding: 10px;">{{ c.assigned_to.username if c.assigned_to else 'Unassigned' }}</td>
+                    <td style="padding: 10px;">{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" style="padding: 30px; text-align: center; color: #64748b;">No complaints match the selected filters.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Hide date fields for preset report types
+    document.getElementById('report-type').addEventListener('change', function() {
+        const showDates = this.value === 'custom';
+        document.getElementById('date-start-group').style.display = showDates ? 'block' : 'none';
+        document.getElementById('date-end-group').style.display = showDates ? 'block' : 'none';
+    });
+    // Initial state
+    document.getElementById('report-type').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

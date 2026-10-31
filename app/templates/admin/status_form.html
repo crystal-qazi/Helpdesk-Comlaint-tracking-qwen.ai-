@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Edit Status{% endblock %}
+{% block page_title %}Edit Status - {{ status.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label>Status Name</label>
+            <input type="text" class="form-control" value="{{ status.name }}" readonly style="background: #f1f5f9;">
+            <small style="color: #64748b;">Status names cannot be changed to preserve historical complaint data.</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Color (Hex Code)</label>
+            <input type="color" name="color" class="form-control" value="{{ status.color }}" style="height: 50px;">
+        </div>
+        
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="is_closed" {% if status.is_closed %}checked{% endif %}>
+                Is Closed State
+            </label>
+            <small style="color: #64748b;">Mark as closed state (e.g., Closed, Rejected) for reporting purposes.</small>
+        </div>
+        
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="is_active" {% if status.is_active %}checked{% endif %}>
+                Active
+            </label>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">Update Status</button>
+            <a href="{{ url_for('admin.statuses') }}" class="btn" style="background: #e2e8f0; color: #334155;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

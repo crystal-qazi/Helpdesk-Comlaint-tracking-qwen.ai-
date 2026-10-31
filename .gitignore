@@ -1,0 +1,71 @@
+# ==========================================
+# Python & Bytecode
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ==========================================
+# Virtual Environments (DO NOT COMMIT)
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+build/
+dist/
+*.egg-info/
+
+# ==========================================
+# Flask Specifics
+# ==========================================
+# Flask instance folder contains local configurations
+instance/
+
+# Flask-WebAssets cache folder
+.webassets-cache
+
+# Database files (if using SQLite locally)
+*.db
+*.sqlite3
+*.sqlite3-journal
+
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+.env
+.flaskenv
+*.local
+*.secret
+*.secret.json
+
+# ==========================================
+# Unit Testing & Coverage Caches
+# ==========================================
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ==========================================
+# IDE & Text Editors
+# ==========================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ==========================================
+# Operating System Artifacts
+# ==========================================
+.DS_Store
+Thumbs.db

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ report_title }}{% endblock %}
+{% block page_title %}{{ report_title }}{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0;">{{ report_title }}</h3>
+        <button onclick="window.print()" class="btn" style="background: #64748b; color: white;">🖨️ Print</button>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+    <div class="card">
+        <h3 style="margin-top: 0;">Summary</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9;">
+                    <th style="padding: 8px; text-align: left;">{{ group_field }}</th>
+                    <th style="padding: 8px; text-align: right;">Count</th>
+                    <th style="padding: 8px; text-align: right;">%</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set total = grouped.values()|sum %}
+                {% for name, count in grouped.items() %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 8px;"><strong>{{ name }}</strong></td>
+                    <td style="padding: 8px; text-align: right;">{{ count }}</td>
+                    <td style="padding: 8px; text-align: right; color: #64748b;">
+                        {% if total > 0 %}{{ (count / total * 100)|round(1) }}%{% else %}0%{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr style="background: #f1f5f9; font-weight: bold;">
+                    <td style="padding: 8px;">Total</td>
+                    <td style="padding: 8px; text-align: right;">{{ total }}</td>
+                    <td style="padding: 8px; text-align: right;">100%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card">
+        <h3 style="margin-top: 0;">Complaints ({{ complaints|length }})</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f1f5f9; text-align: left;">
+                        <th style="padding: 8px;">Ticket #</th>
+                        <th style="padding: 8px;">Title</th>
+                        <th style="padding: 8px;">{{ group_field }}</th>
+                        <th style="padding: 8px;">Priority</th>
+                        <th style="padding: 8px;">Status</th>
+                        <th style="padding: 8px;">Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in complaints %}
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 8px;">
+                            <a href="{{ url_for('complaints.view_complaint', complaint_id=c.id) }}" style="color: #0ea5e9; text-decoration: none; font-weight: bold;">
+                                {{ c.complaint_number }}
+                            </a>
+                        </td>
+                        <td style="padding: 8px;">{{ c.title[:50] }}{% if c.title|length > 50 %}...{% endif %}</td>
+                        <td style="padding: 8px;">
+                            {% if group_field == 'Department' %}{{ c.department.name }}
+                            {% elif group_field == 'Software' %}{{ c.software.name }}
+                            {% elif group_field == 'Priority' %}<span style="color: {{ c.priority.color }}; font-weight: bold;">{{ c.priority.name }}</span>
+                            {% elif group_field == 'Status' %}<span style="background: {{ c.status.color }}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">{{ c.status.name }}</span>
+                            {% elif group_field == 'Assigned To' %}{{ c.assigned_to.username if c.assigned_to else 'Unassigned' }}
+                            {% endif %}
+                        </td>
+                        <td style="padding: 8px;"><span style="color: {{ c.priority.color }};">{{ c.priority.name }}</span></td>
+                        <td style="padding: 8px;"><span style="background: {{ c.status.color }}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">{{ c.status.name }}</span></td>
+                        <td style="padding: 8px;">{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

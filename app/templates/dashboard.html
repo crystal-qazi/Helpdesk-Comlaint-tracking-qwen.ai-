@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+    <div class="card" style="border-left: 5px solid #0ea5e9; padding: 15px;">
+        <small style="color: #64748b;">Total Complaints</small>
+        <h2 style="margin: 5px 0; color: #0ea5e9;">{{ kpis.total }}</h2>
+    </div>
+    <div class="card" style="border-left: 5px solid #06b6d4; padding: 15px;">
+        <small style="color: #64748b;">Open</small>
+        <h2 style="margin: 5px 0; color: #06b6d4;">{{ kpis.open }}</h2>
+    </div>
+    <div class="card" style="border-left: 5px solid #3b82f6; padding: 15px;">
+        <small style="color: #64748b;">In Progress</small>
+        <h2 style="margin: 5px 0; color: #3b82f6;">{{ kpis.in_progress }}</h2>
+    </div>
+    <div class="card" style="border-left: 5px solid #f59e0b; padding: 15px;">
+        <small style="color: #64748b;">Pending</small>
+        <h2 style="margin: 5px 0; color: #f59e0b;">{{ kpis.pending + kpis.on_hold }}</h2>
+    </div>
+    <div class="card" style="border-left: 5px solid #10b981; padding: 15px;">
+        <small style="color: #64748b;">Resolved</small>
+        <h2 style="margin: 5px 0; color: #10b981;">{{ kpis.resolved }}</h2>
+    </div>
+    <div class="card" style="border-left: 5px solid #64748b; padding: 15px;">
+        <small style="color: #64748b;">Closed</small>
+        <h2 style="margin: 5px 0; color: #64748b;">{{ kpis.closed }}</h2>
+    </div>
+    <div class="card" style="border-left: 5px solid #dc2626; padding: 15px;">
+        <small style="color: #64748b;">🚨 Overdue</small>
+        <h2 style="margin: 5px 0; color: #dc2626;">{{ kpis.overdue }}</h2>
+    </div>
+    <div class="card" style="border-left: 5px solid #8b5cf6; padding: 15px;">
+        <small style="color: #64748b;">SLA Compliance</small>
+        <h2 style="margin: 5px 0; color: #8b5cf6;">{{ kpis.sla_compliance }}%</h2>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+    <div class="card">
+        <h3 style="margin-top:0;">Complaints by Status</h3>
+        <div style="position: relative; height: 280px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Complaints by Priority</h3>
+        <div style="position: relative; height: 280px;">
+            <canvas id="priorityChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+    <div class="card">
+        <h3 style="margin-top:0;">Complaints by Department</h3>
+        <div style="position: relative; height: 280px;">
+            <canvas id="deptChart"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Complaints by Software</h3>
+        <div style="position: relative; height: 280px;">
+            <canvas id="swChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3 -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px;">
+    <div class="card">
+        <h3 style="margin-top:0;">Daily Trend (Last 30 Days)</h3>
+        <div style="position: relative; height: 300px;">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Top Engineers (Active Workload)</h3>
+        <div style="position: relative; height: 300px;">
+            <canvas id="engineerChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js (locally hosted for offline use) -->
+<script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
+<script>
+    // Status Chart (Doughnut)
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ status_labels|tojson }},
+            datasets: [{
+                data: {{ status_values|tojson }},
+                backgroundColor: {{ status_colors|tojson }}
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Priority Chart (Doughnut)
+    new Chart(document.getElementById('priorityChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ priority_labels|tojson }},
+            datasets: [{
+                data: {{ priority_values|tojson }},
+                backgroundColor: {{ priority_colors|tojson }}
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Department Chart (Horizontal Bar)
+    new Chart(document.getElementById('deptChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ dept_labels|tojson }},
+            datasets: [{
+                label: 'Complaints',
+                data: {{ dept_values|tojson }},
+                backgroundColor: '#0ea5e9'
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Software Chart (Bar)
+    new Chart(document.getElementById('swChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ sw_labels|tojson }},
+            datasets: [{
+                label: 'Complaints',
+                data: {{ sw_values|tojson }},
+                backgroundColor: '#8b5cf6'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Trend Chart (Line)
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: {{ trend_labels|tojson }},
+            datasets: [{
+                label: 'Complaints Created',
+                data: {{ trend_values|tojson }},
+                borderColor: '#0ea5e9',
+                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Engineer Chart (Horizontal Bar)
+    new Chart(document.getElementById('engineerChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ engineer_labels|tojson }},
+            datasets: [{
+                label: 'Active Tickets',
+                data: {{ engineer_values|tojson }},
+                backgroundColor: '#10b981'
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
+{% endblock %}

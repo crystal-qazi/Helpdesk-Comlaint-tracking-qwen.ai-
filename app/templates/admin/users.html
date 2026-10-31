@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0;">All Users</h3>
+        <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">+ New User</a>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 10px;">Username</th>
+                <th style="padding: 10px;">Full Name</th>
+                <th style="padding: 10px;">Email</th>
+                <th style="padding: 10px;">Roles</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px;"><strong>{{ user.username }}</strong></td>
+                <td style="padding: 10px;">{{ user.profile.full_name if user.profile else 'N/A' }}</td>
+                <td style="padding: 10px;">{{ user.email or 'N/A' }}</td>
+                <td style="padding: 10px;">
+                    {% for role in user.roles %}
+                        <span style="background: #0ea5e9; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem; margin-right: 4px;">{{ role.name }}</span>
+                    {% endfor %}
+                </td>
+                <td style="padding: 10px;">
+                    {% if user.is_active %}
+                        <span style="color: #10b981;">✓ Active</span>
+                    {% else %}
+                        <span style="color: #dc2626;">✗ Inactive</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 10px;">
+                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn" style="background: #f59e0b; color: white; padding: 5px 10px; font-size: 0.85rem;">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

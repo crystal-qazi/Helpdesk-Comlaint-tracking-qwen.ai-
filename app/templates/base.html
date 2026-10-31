@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hospital IT Helpdesk{% endblock %}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; min-height: 100vh; background: #f4f6f9; }
+        .sidebar { width: 250px; background: #1e293b; color: white; padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar h2 { text-align: center; color: #38bdf8; margin-bottom: 30px; font-size: 1.2rem; }
+        .sidebar a { display: block; color: #cbd5e1; padding: 12px 20px; text-decoration: none; transition: 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: #38bdf8; border-left: 4px solid #38bdf8; }
+        .main-content { margin-left: 250px; width: 100%; padding: 20px; }
+        .topbar { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #0ea5e9; color: white; }
+        .btn-primary:hover { background: #0284c7; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #334155; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
+        .flash { padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+        .flash.danger { background: #fee2e2; color: #991b1b; }
+        .flash.success { background: #dcfce7; color: #166534; }
+        .flash.info { background: #dbeafe; color: #1e40af; }
+        
+        /* Print styles */
+        @media print {
+            body { background: white; }
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 0; }
+            .topbar { box-shadow: none; border-bottom: 2px solid #333; }
+            .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+            .btn { display: none !important; }
+            form { display: none !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            a { color: #000 !important; text-decoration: none !important; }
+            h1, h2, h3 { page-break-after: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🏥 IT Helpdesk</h2>
+        <a href="{{ url_for('dashboard.index') }}">📊 Dashboard</a>
+        <a href="{{ url_for('complaints.list_complaints') }}">📝 Complaints</a>
+        <a href="{{ url_for('notifications.list_notifications') }}">🔔 Notifications</a>
+        <a href="{{ url_for('reports.reports_index') }}">📈 Reports</a>
+        <a href="{{ url_for('admin.users') }}">👥 Users</a>
+        <a href="{{ url_for('admin.roles') }}">🔐 Roles</a>
+        <a href="{{ url_for('admin.departments') }}">🏢 Departments</a>
+        <a href="{{ url_for('admin.software') }}">💻 Software</a>
+        <a href="{{ url_for('admin.priorities') }}">🎯 Priorities</a>
+        <a href="{{ url_for('admin.statuses') }}">🔄 Statuses</a>
+        <a href="{{ url_for('admin.categories') }}">🗂️ Categories</a>
+        <a href="{{ url_for('admin.sla_policies') }}">⏱️ SLA Policies</a>
+        <a href="{{ url_for('admin.working_schedule') }}">📅 Working Schedule</a>
+        <a href="{{ url_for('admin.holidays') }}">🎉 Holidays</a>
+        <a href="{{ url_for('auth.change_password') }}">🔑 Change Password</a>
+        <a href="{{ url_for('admin.audit_logs') }}">🔍 Audit Logs</a>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3 style="margin:0; color:#334155;">{% block page_title %}Dashboard{% endblock %}</h3>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="{{ url_for('notifications.list_notifications') }}" 
+                   style="position: relative; color: #334155; text-decoration: none; font-size: 1.3rem;"
+                   id="notif-bell">
+                    🔔
+                    <span id="notif-badge" 
+                          style="position: absolute; top: -5px; right: -8px; 
+                                 background: #dc2626; color: white; 
+                                 border-radius: 50%; padding: 2px 6px; 
+                                 font-size: 0.7rem; min-width: 18px; text-align: center;
+                                 display: none;">0</span>
+                </a>
+                <span>Welcome, <strong>{{ current_user.username }}</strong></span> | 
+                <a href="{{ url_for('auth.logout') }}" style="color:#ef4444; text-decoration:none;">Logout</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        // Poll for unread notification count every 30 seconds
+        function updateNotifBadge() {
+            fetch('{{ url_for("notifications.unread_count") }}')
+                .then(r => r.json())
+                .then(data => {
+                    const badge = document.getElementById('notif-badge');
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(err => console.error('Notification poll error:', err));
+        }
+        
+        // Initial load
+        updateNotifBadge();
+        
+        // Poll every 30 seconds
+        setInterval(updateNotifBadge, 30000);
+    </script>
+</body>
+</html>
